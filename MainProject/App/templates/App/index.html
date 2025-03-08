@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crime Prediction App</title>
+    <!-- ApexCharts Library -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!-- Leaflet for Map Visualization -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 3v18h18"></path>
+                        <path d="M18 17V9"></path>
+                        <path d="M13 17V5"></path>
+                        <path d="M8 17v-3"></path>
+                    </svg>
+                    Crime Prediction App
+                </h1>
+                <p class="card-description">
+                    Enter the parameters below to predict crime patterns based on historical data.
+                </p>
+            </div>
+            <div class="card-content">
+                <form id="predictionForm" class="form-grid">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="area">Area</label>
+                            <select id="area" name="area" required>
+                                <option value="1" selected>Central</option>
+                                <option value="3">Southwest</option>
+                                <option value="15">N Hollywood</option>
+                                <option value="19">Mission</option>
+                                <option value="14">Pacific</option>
+                                <option value="2">Rampart</option>
+                                <option value="4">Hollenbeck</option>
+                                <option value="18">Southeast</option>
+                                <option value="13">Newton</option>
+                                <option value="20">Olympic</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="crimeType">Crime Type</label>
+                            <select id="crimeType" name="crimeType" required>
+                                <option value="624" selected>Battery - Simple Assault</option>
+                                <option value="745">Vandalism - Misdemeanor ($399 or Under)</option>
+                                <option value="740">Vandalism - Felony ($400 & Over, All Church Vandalisms)</option>
+                                <option value="625">Battery Police (Simple Assault)</option>
+                                <option value="886">Child Abandonment</option>
+                                <option value="761">Vehicle - Attempt Stolen (Others)</option>
+                                <option value="845">Sex Offender Registrant Out of Compliance</option>
+                                <option value="756">Vehicle - Stolen (Others)</option>
+                                <option value="121">Rape, Forcible</option>
+                                <option value="860">Violation of Court Order</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="victimSex">Victim Sex</label>
+                            <select id="victimSex" name="victimSex" required>
+                                <option value="1">Female (F)</option>
+                                <option value="2">Hispanic (H)</option>
+                                <option value="3">Male (M)</option>
+                                <option value="4">Unknown</option>
+                                <option value="5">Non-Binary/Other (X)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="victimDescent">Victim Descent</label>
+                            <select id="victimDescent" name="victimDescent" required>
+                                <option value="2">Black (B)</option>
+                                <option value="7">Hispanic (H)</option>
+                                <option value="19">Other (X)</option>
+                                <option value="18">White (W)</option>
+                                <option value="1">Asian (A)</option>
+                                <option value="12">Other (O)</option>
+                                <option value="16">Unknown</option>
+                                <option value="3">Chinese (C)</option>
+                                <option value="5">Filipino (F)</option>
+                                <option value="10">Korean (K)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="weaponUsed">Weapon Used</label>
+                            <select id="weaponUsed" name="weaponUsed" required>
+                                <option value="61" selected>Strong-Arm (Hands, Fist, Feet or Bodily Force)</option>
+                                <option value="62">Unknown Weapon/Other Weapon</option>
+                                <option value="79">Unknown</option>
+                                <option value="54">Rock/Thrown Object</option>
+                                <option value="73">Verbal Threat</option>
+                                <option value="30">Handgun</option>
+                                <option value="40">Knife with Blade Over 6 Inches</option>
+                                <option value="20">Heckler & Koch 91 Semiautomatic Assault Rifle</option>
+                                <option value="23">M-14 Semiautomatic Assault Rifle</option>
+                                <option value="17">Uzi Semiautomatic Assault Rifle</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="timeOfCrime">Time of Crime (Hour, 0-23)</label>
+                            <input id="timeOfCrime" name="timeOfCrime" type="number" min="0" max="23" value="14" value="3" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="reportedDelay">Reported Delay (Days)</label>
+                            <input id="reportedDelay" name="reportedDelay" type="number" min="0" value="2"  required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="daysAfterReported">Days After Reported</label>
+                            <input id="daysAfterReported" name="daysAfterReported" type="number" min="0" value="5" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer">
+                <button id="predictBtn" class="btn">Predict</button>
+            </div>
+        </div>
+
+        <!-- Prediction Results Section (Initially Hidden) -->
+        <div id="resultsSection" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        Prediction Results
+                    </h2>
+                </div>
+                <div class="card-content">
+                    <div class="prediction-result">
+                        <div class="prediction-header">
+                            <div id="predictionStatus" class="prediction-status"></div>
+                            <div id="confidenceScore" class="confidence-score"></div>
+                        </div>
+                        <p id="predictionText"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-container">
+                <!-- Bar Chart - High Crime Areas -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">High Crime Areas</h3>
+                    </div>
+                    <div class="chart-body">
+                        <div id="areaBarChart"></div>
+                    </div>
+                </div>
+
+                <!-- Bar Chart - Peak Crime Hours -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Peak Crime Hours</h3>
+                    </div>
+                    <div class="chart-body">
+                        <div id="hourBarChart"></div>
+                    </div>
+                </div>
+
+                <!-- Horizontal Bar Chart - Top Crime Types -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Top Crime Types</h3>
+                    </div>
+                    <div class="chart-body">
+                        <div id="crimeTypeChart"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <!-- <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div> -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('predictionForm');
+            const predictBtn = document.getElementById('predictBtn');
+            const resultsSection = document.getElementById('resultsSection');
+            const predictionStatus = document.getElementById('predictionStatus');
+            const confidenceScore = document.getElementById('confidenceScore');
+            const predictionText = document.getElementById('predictionText');
+
+            let timeOfCrime =  document.getElementById('timeOfCrime');
+            let reportedDelay = document.getElementById('reportedDelay');
+            let daysAfterReportedInput = document.getElementById('daysAfterReported');
+            //const loadingOverlay = document.getElementById('loadingOverlay');
+            //loadingOverlay.classList.remove('hidden')
+            // Initialize map
+            let map = null;
+            
+            predictBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                if (timeOfCrime.value.trim() === "") {
+                    alert("Time Of Crime is required!"); // Show an alert
+                    timeOfCrime.focus(); // Bring focus back to input
+                    return; // Stop submission
+                }
+
+                if (reportedDelay.value.trim() === "") {
+                    alert("Reported Delay is required!"); // Show an alert
+                    reportedDelay.focus(); // Bring focus back to input
+                    return; // Stop submission
+                }
+
+                if (daysAfterReportedInput.value.trim() === "") {
+                    alert("Days After Reported is required!"); // Show an alert
+                    daysAfterReportedInput.focus(); // Bring focus back to input
+                    return; // Stop submission
+                }
+
+                // Get form values
+                const formData = {
+                    area: document.getElementById('area').value,
+                    crimeType: document.getElementById('crimeType').value,
+                    victimSex: document.getElementById('victimSex').value,
+                    victimDescent: document.getElementById('victimDescent').value,
+                    weaponUsed: document.getElementById('weaponUsed').value,
+                    timeOfCrime: timeOfCrime.value,
+                    reportedDelay: reportedDelay.value,
+                    daysAfterReported: daysAfterReportedInput.value
+                };
+                
+                // Show loading overlay
+                ;
+                
+                // Make API call (simulated)
+                fetchPredictionData(formData);
+            });
+            console.log(`{% url 'crime_predict' %}`)
+            function fetchPredictionData(formData) {
+                fetch(`{% url 'crime_predict' %}`, {  // Replace with the actual API endpoint
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Hide loading overlay
+                    //loadingOverlay.classList.add('hidden');
+            
+                    // Display results
+                    if (data.success) {
+                        predictionStatus.innerText = 'Prediction Successful!';
+                        const confidenceValue = data.confidence_score.toFixed(2) + "%";
+                        const color = data.confidence_score >= 50 ? "green" : "red";
+
+                        // Update the confidenceScore element with colored percentage
+                        confidenceScore.innerHTML = `Confidence: <span style="color: ${color};">${confidenceValue}</span>`;
+
+                        predictionText.innerText = `Prediction: ${data.prediction}`;
+                        resultsSection.classList.remove('hidden');
+
+
+                        console.log(data.areas.labels)
+                        // Render charts
+                        const chartData = {
+                            areas: {
+                                labels:data.areas.labels,
+                                data: data.areas.data
+                            },
+                            hours: {  
+                                labels: data.time_of_crime.labels,
+                                data: data.time_of_crime.data
+                            },
+                            crimeTypes: {
+                                labels: data.crimeTypes.labels,
+                                data: data.crimeTypes.data
+                            }
+                        }
+                        // Render charts
+                        renderCharts(chartData);
+                        
+                        // Scroll to results
+                        resultsSection.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        predictionStatus.innerText = 'Prediction Failed!';
+                        predictionText.innerText = 'Error in prediction.';
+                        resultsSection.classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    //loadingOverlay.classList.add('hidden');
+                    predictionStatus.innerText = 'Error!';
+                    predictionText.innerText = 'Something went wrong. Please try again.';
+                    resultsSection.classList.remove('hidden');
+                });
+
+                
+            
+            }
+            function renderCharts(chartData) {
+                // 1. Bar Chart - High Crime Areas
+                renderAreaBarChart(chartData.areas);
+                
+                // 2. Bar Chart - Peak Crime Hours
+                renderHourBarChart(chartData.hours);
+                
+                // 6. Horizontal Bar Chart - Top Crime Types
+                renderCrimeTypeChart(chartData.crimeTypes);
+
+            }
+            /*
+                    {
+                        setTimeout(function() {
+                        // Mock API response
+                        const response = {
+                            prediction: {
+                                status: Math.random() > 0.5 ? 'Solved' : 'Not Solved',
+                                confidenceScore: Math.floor(Math.random() * 41) + 60, // 60-100
+                                description: `Based on the provided parameters, this crime is likely to be ${Math.random() > 0.5 ? 'solved' : 'not solved'} with the given evidence and circumstances.`
+                            },
+                            
+                        };
+                        
+                        
+                }
+                */
+                
+                // Render charts
+
+                function renderAreaBarChart(data) {
+                    const options = {
+                        series: [{
+                            name: 'Crime Incidents',
+                            data: data.data
+                        }],
+                        chart: {
+                            type: 'bar',
+                            height: 300,
+                            toolbar: {
+                                show: false
+                            }
+                        },
+                        plotOptions: {
+                            bar: {
+                                borderRadius: 4,
+                                horizontal: false,
+                            }
+                        },
+                        dataLabels: {
+                            enabled: false
+                        },
+                        xaxis: {
+                            categories:[...data.labels],
+                        },
+                        colors: ['#0070f3']
+                    };
+                    
+                    const chart = new ApexCharts(document.querySelector("#areaBarChart"), options);
+                    chart.render();
+                }
+                
+                function renderHourBarChart(data) {
+                    const options = {
+                        series: [{
+                            name: 'Crime Incidents',
+                            data: data.data
+                        }],
+                        chart: {
+                            type: 'bar',
+                            height: 300,
+                            toolbar: {
+                                show: false
+                            }
+                        },
+                        plotOptions: {
+                            bar: {
+                                borderRadius: 4,
+                                horizontal: false,
+                            }
+                        },
+                        dataLabels: {
+                            enabled: false
+                        },
+                        xaxis: {
+                            categories: data.labels.map(hour => `${hour}:00`),
+                        },
+                        colors: ['#10b981']
+                    };
+                    
+                    const chart = new ApexCharts(document.querySelector("#hourBarChart"), options);
+                    chart.render();
+                }
+                
+                function renderCrimeTypeChart(data) {
+                    const options = {
+                        series: [{
+                            name: 'Crime Incidents',
+                            data: data.data
+                        }],
+                        chart: {
+                            type: 'bar',
+                            height: 300,
+                            toolbar: {
+                                show: false
+                            }
+                        },
+                        plotOptions: {
+                            bar: {
+                                borderRadius: 4,
+                                horizontal: true,
+                            }
+                        },
+                        dataLabels: {
+                            enabled: false
+                        },
+                        xaxis: {
+                            categories:[...data.labels],
+                        },
+                        colors: ['#6366f1']
+                    };
+                    
+                    const chart = new ApexCharts(document.querySelector("#crimeTypeChart"), options);
+                    chart.render();
+                }
+                
+            
+        });
+    </script>
+</body>
+</html>
