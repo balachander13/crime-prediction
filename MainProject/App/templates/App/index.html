@@ -162,6 +162,8 @@
 
             <!-- Charts Section -->
             <div class="charts-container">
+                
+
                 <!-- Bar Chart - High Crime Areas -->
                 <div class="chart-card">
                     <div class="chart-header">
@@ -192,6 +194,27 @@
                     </div>
                 </div>
 
+                <!-- Pie Chart - Victim Sex -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Victim Sex</h3>
+                    </div>
+                    <div class="chart-body">
+                        <div id="victimSexChart"></div>
+                    </div>
+                </div>
+
+                <!-- Donut Chart - Victim Descent -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Victim Descent</h3>
+                    </div>
+                    <div class="chart-body">
+                        <div id="victimDescentChart"></div>
+                    </div>
+                </div>
+
+                
             </div>
         </div>
     </div>
@@ -298,6 +321,14 @@
                             crimeTypes: {
                                 labels: data.crimeTypes.labels,
                                 data: data.crimeTypes.data
+                            },
+                            victimSex:{
+                                labels: data.victimSex.labels,
+                                data: data.victimSex.data
+                            },
+                            victimDescent:{
+                                labels: data.victimDescent.labels,
+                                data: data.victimDescent.data
                             }
                         }
                         // Render charts
@@ -323,6 +354,8 @@
             
             }
             function renderCharts(chartData) {
+
+                
                 // 1. Bar Chart - High Crime Areas
                 renderAreaBarChart(chartData.areas);
                 
@@ -332,122 +365,164 @@
                 // 6. Horizontal Bar Chart - Top Crime Types
                 renderCrimeTypeChart(chartData.crimeTypes);
 
-            }
-            /*
-                    {
-                        setTimeout(function() {
-                        // Mock API response
-                        const response = {
-                            prediction: {
-                                status: Math.random() > 0.5 ? 'Solved' : 'Not Solved',
-                                confidenceScore: Math.floor(Math.random() * 41) + 60, // 60-100
-                                description: `Based on the provided parameters, this crime is likely to be ${Math.random() > 0.5 ? 'solved' : 'not solved'} with the given evidence and circumstances.`
-                            },
-                            
-                        };
-                        
-                        
-                }
-                */
-                
-                // Render charts
+                // 4. Pie Chart - Victim Sex
+                renderVictimSexChart(chartData.victimSex);
 
-                function renderAreaBarChart(data) {
-                    const options = {
-                        series: [{
-                            name: 'Crime Incidents',
-                            data: data.data
-                        }],
-                        chart: {
-                            type: 'bar',
-                            height: 300,
-                            toolbar: {
-                                show: false
-                            }
-                        },
-                        plotOptions: {
-                            bar: {
-                                borderRadius: 4,
-                                horizontal: false,
-                            }
-                        },
-                        dataLabels: {
-                            enabled: false
-                        },
-                        xaxis: {
-                            categories:[...data.labels],
-                        },
-                        colors: ['#0070f3']
-                    };
-                    
-                    const chart = new ApexCharts(document.querySelector("#areaBarChart"), options);
-                    chart.render();
-                }
+                // 5. Donut Chart - Victim Descent
+                renderVictimDescentChart(chartData.victimDescent);
+
+            }
+        
+            
+            // Render charts
+
+
+            function renderAreaBarChart(data) {
+                const options = {
+                    series: [{
+                        name: 'Crime Incidents',
+                        data: data.data
+                    }],
+                    chart: {
+                        type: 'bar',
+                        height: 300,
+                        toolbar: {
+                            show: false
+                        }
+                    },
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 4,
+                            horizontal: false,
+                        }
+                    },
+                    dataLabels: {
+                        enabled: false
+                    },
+                    xaxis: {
+                        categories:[...data.labels],
+                    },
+                    colors: ['#0070f3']
+                };
                 
-                function renderHourBarChart(data) {
-                    const options = {
-                        series: [{
-                            name: 'Crime Incidents',
-                            data: data.data
-                        }],
-                        chart: {
-                            type: 'bar',
-                            height: 300,
-                            toolbar: {
-                                show: false
-                            }
-                        },
-                        plotOptions: {
-                            bar: {
-                                borderRadius: 4,
-                                horizontal: false,
-                            }
-                        },
-                        dataLabels: {
-                            enabled: false
-                        },
-                        xaxis: {
-                            categories: data.labels.map(hour => `${hour}:00`),
-                        },
-                        colors: ['#10b981']
-                    };
-                    
-                    const chart = new ApexCharts(document.querySelector("#hourBarChart"), options);
-                    chart.render();
-                }
+                const chart = new ApexCharts(document.querySelector("#areaBarChart"), options);
+                chart.render();
+            }
+            
+            function renderHourBarChart(data) {
+                const options = {
+                    series: [{
+                        name: 'Crime Incidents',
+                        data: data.data
+                    }],
+                    chart: {
+                        type: 'bar',
+                        height: 300,
+                        toolbar: {
+                            show: false
+                        }
+                    },
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 4,
+                            horizontal: false,
+                        }
+                    },
+                    dataLabels: {
+                        enabled: false
+                    },
+                    xaxis: {
+                        categories: data.labels.map(hour => `${hour}:00`),
+                    },
+                    colors: ['#10b981']
+                };
                 
-                function renderCrimeTypeChart(data) {
-                    const options = {
-                        series: [{
-                            name: 'Crime Incidents',
-                            data: data.data
-                        }],
-                        chart: {
-                            type: 'bar',
-                            height: 300,
-                            toolbar: {
-                                show: false
-                            }
-                        },
-                        plotOptions: {
-                            bar: {
-                                borderRadius: 4,
-                                horizontal: true,
-                            }
-                        },
-                        dataLabels: {
-                            enabled: false
-                        },
-                        xaxis: {
-                            categories:[...data.labels],
-                        },
-                        colors: ['#6366f1']
-                    };
-                    
-                    const chart = new ApexCharts(document.querySelector("#crimeTypeChart"), options);
-                    chart.render();
-                }
+                const chart = new ApexCharts(document.querySelector("#hourBarChart"), options);
+                chart.render();
+            }
+            
+            function renderCrimeTypeChart(data) {
+                const options = {
+                    series: [{
+                        name: 'Crime Incidents',
+                        data: data.data
+                    }],
+                    chart: {
+                        type: 'bar',
+                        height: 300,
+                        toolbar: {
+                            show: false
+                        }
+                    },
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 4,
+                            horizontal: true,
+                        }
+                    },
+                    dataLabels: {
+                        enabled: false
+                    },
+                    xaxis: {
+                        categories:[...data.labels],
+                    },
+                    colors: ['#6366f1']
+                };
                 
+                const chart = new ApexCharts(document.querySelector("#crimeTypeChart"), options);
+                chart.render();
+            }
+
+            // Initialize the chart
+            function renderVictimSexChart(data) {
+                const options = {
+                    name: 'Crime Incidents',
+                    series: data.data,
+                    chart: {
+                        width: 380,
+                        type: 'pie',
+                    },
+                    labels: data.labels,
+                    responsive: [{
+                        breakpoint: 480,
+                        options: {
+                            chart: {
+                                width: 200
+                            },
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }]
+                };
+        
+                var chart = new ApexCharts(document.querySelector("#victimSexChart"), options);
+                chart.render();
+            }
+
+            function renderVictimDescentChart(data) {
+                const options = {
+                    series: data.data,
+                    chart: {
+                    type: 'donut',
+                },
+                labels: data.labels,
+                responsive: [{
+                    breakpoint: 480,
+                    options: {
+                    chart: {
+                        width: 200
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                    }
+                }]
+                };
+        
+                var chart = new ApexCharts(document.querySelector("#victimDescentChart"), options);
+                chart.render();
+            }  
             
         });
     </script>

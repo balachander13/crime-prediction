@@ -141,39 +141,62 @@ def crime_predict(request):
 
             # Prepare area data
             area_counts = {}
+            # Prepare crime type data
+            crime_type_counts = {}
+            # Prepare time_of_crime data
+            time_counts = [0] * 24
+            
+            victim_sex_counts = {}
+            
+            victim_descent_counts = {}
+            
+            confidence_percent = []
+            
             for report in last_reports:
                 area_counts[report.area_name] = area_counts.get(report.area_name, 0) + 1
+                time_counts[report.time_of_crime] += 1
+                crime_type_counts[report.crime_type_name] = crime_type_counts.get(report.crime_type_name, 0) + 1
+                victim_sex_counts[report.victim_sex_label] = victim_sex_counts.get(report.victim_sex_label, 0) + 1
+                victim_descent_counts[report.victim_descent_label] = victim_descent_counts.get(report.victim_descent_label, 0) + 1
+                confidence_percent.append(round(report.confidence, 2))
+                
             areas_chart = {
                 "labels": list(area_counts.keys()),
                 "data": list(area_counts.values())
             }
-
-            # Prepare time_of_crime data
-            time_counts = [0] * 24
-            for report in last_reports:
-                time_counts[report.time_of_crime] += 1
+            
             time_chart = {
                 "labels": list(range(24)),
                 "data": time_counts
             }
 
-            # Prepare crime type data
-            crime_type_counts = {}
-            for report in last_reports:
-                crime_type_counts[report.crime_type_name] = crime_type_counts.get(report.crime_type_name, 0) + 1
             crime_types_chart = {
                 "labels": list(crime_type_counts.keys()),
                 "data": list(crime_type_counts.values())
             }
 
+            victim_sex_chart = {
+                "labels": list(victim_sex_counts.keys()),
+                "data": list(victim_sex_counts.values())
+            }
+            
+            victim_descent_chart = {
+                "labels": list(victim_descent_counts.keys()),
+                "data": list(victim_descent_counts.values())
+            }
+
+            print(areas_chart)
             # Send response
             return JsonResponse({
                 'success': True,
                 'prediction': prediction,
                 'confidence_score': confidence_score,
+                'confidence':confidence_percent,
                 'areas': areas_chart,
                 'time_of_crime': time_chart,
-                'crimeTypes': crime_types_chart
+                'crimeTypes': crime_types_chart,
+                'victimSex':victim_sex_chart,
+                'victimDescent':victim_descent_chart
             })
 
         except Exception as e:
